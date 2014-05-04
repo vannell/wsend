@@ -384,7 +384,7 @@ listServer() {
 }
 
 downloadLastVersion() {
-	curl -s -L -o "$wsend_base/update.sh" https://raw.github.com/abemassry/wsend/master/update.sh
+	curl -s -L -o "$wsend_base/update.sh" https://raw.github.com/vannell/wsend/custom/update.sh
 	bash "$wsend_base/update.sh" $@
 	exit 0
 }
@@ -426,18 +426,10 @@ make_absolute() {
   $ret
 }
 
-if [[ ! $curl_installed ]]; then
-  echoerr -e "\033[01;31m"
-  echoerr "error:   curl is required but it is not installed. Aborting";
-  echoerr "error:   For ubuntu please run: sudo apt-get install curl";
-  echoerr -e "\033[00m"
-  exit 1;
-fi
-# check to see if directory exists
-if [ -d "$wsend_base" ]; then
-  #check version
+update_version() {
   installedVersion=$(cat $wsend_base/version)
-  latestVersion=$(curl -L -s https://raw.github.com/abemassry/wsend/master/version)
+  latestVersion=$(curl -L -s https://raw.github.com/vannell/wsend/custom/version)
+
   if [ "$installedVersion" != "$latestVersion" ]; then
     echoerr -e "\033[01;36m"
     echoerr "info:    "
@@ -446,7 +438,17 @@ if [ -d "$wsend_base" ]; then
     echoerr -e "\033[00m"
     downloadLastVersion
   fi
-else
+}
+
+if [[ ! $curl_installed ]]; then
+  echoerr -e "\033[01;31m"
+  echoerr "error:   curl is required but it is not installed. Aborting";
+  echoerr "error:   For ubuntu please run: sudo apt-get install curl";
+  echoerr -e "\033[00m"
+  exit 1;
+fi
+# check to see if directory exists
+if [ ! -d "$wsend_base" ]; then
   # if not, install
   if [ "$freeSpaceK" -gt 100 ]; then
     mkdir $wsend_base
@@ -565,6 +567,9 @@ while test -n "$1"; do
       listServer
       shift
       ;;
+	--update)
+	  update_version
+	  ;;
     *)
       fileSendBool="true"
       shift
